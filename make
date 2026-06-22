@@ -8,6 +8,11 @@ XCLI_FOLDER=".xcli"
 setupCommand() {
 	# Save all project files in a cache
 	source ./findProjectFiles.sh
+	echo "Found $(cat $XCLI_FOLDER/projects | wc -l | cut -f 1) projects/workspaces"
+
+	# Save all schemes in a cache
+	source ./findSchemes.sh
+	echo "Found $(cat $XCLI_FOLDER/schemes | wc -l | cut -f 1) schemes"
 }
 
 # This command builds the project and writes possible compilation errors in 
