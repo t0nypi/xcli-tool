@@ -3,6 +3,15 @@
 
 XCLI_FOLDER=".xcli"
 
+# This command scans the current directory for 
+# project files, collects all the schemes
+setupCommand() {
+	# Save all project files in a cache
+	source ./findProjectFiles.sh
+}
+
+# This command builds the project and writes possible compilation errors in 
+# a buffer that can be parsed later.
 buildCommand() {
 	# Get current build configuration
 	XCODE_PROJECT=${XCODE_PROJECT:-"KeylessSDK.xcodeproj"}
@@ -36,12 +45,16 @@ buildCommand() {
 
 # Dispatch based on first argument
 case "$1" in
-    build)
-        buildCommand
-        ;;
-    *)
-        echo "Unknown command: $1"
-        echo "Usage: $0 [build]"
-        exit 1
-        ;;
+	setup)
+		setupCommand
+		;;
+
+	build)
+		buildCommand
+		;;
+	*)
+		echo "Unknown command: $1"
+		echo "Usage: $0 [build]"
+		exit 1
+		;;
 esac
