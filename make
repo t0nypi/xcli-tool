@@ -2,18 +2,24 @@
 # Initialize some globals
 
 XCLI_FOLDER=".xcli"
-mkdir -p $XCLI_FOLDER
 
 buildCommand() {
+	# Get current build configuration
+	XCODE_PROJECT=${XCODE_PROJECT:-"KeylessSDK.xcodeproj"}
+	XCODE_SCHEME=${XCODE_SCHEME:-"KeylessSDK iOS"}
+	XCODE_DESTINATION=${XCODE_DESTINATION:-"generic/platform=iOS Simulator"}
+
+	if [[ ! -e $XCODE_PROJECT ]]; then 
+		echo "Project file is not present in this folder. Check CWD"
+		exit -1
+	fi
+
 	# Get derived data folder for current project-branch
 	source ./getDerivedDataPath.sh
 
 	$derivedDataFolder=$(getDerivedDataPath)
 
-	# Get current build configuration
-	XCODE_PROJECT=${XCODE_PROJECT:-"KeylessSDK.xcodeproj"}
-	XCODE_SCHEME=${XCODE_SCHEME:-"KeylessSDK iOS"}
-	XCODE_DESTINATION=${XCODE_DESTINATION:-"generic/platform=iOS Simulator"}
+	mkdir -p $XCLI_FOLDER
 
 	echo "Building Project $XCODE_PROJECT with scheme $XCODE_SCHEME for $XCODE_DESTINATION"
 	xcodebuild\
@@ -29,7 +35,7 @@ buildCommand() {
 }
 
 # Dispatch based on first argument
-case "${1:-build}" in
+case "$1" in
     build)
         buildCommand
         ;;
