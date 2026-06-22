@@ -4,13 +4,54 @@
 XCLI_FOLDER=".xcli"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
+# Helper: fail with an error message and exit with -1
+fail() {
+	echo "❌ ERROR: $1" >&2
+	exit -1
+}
+
 mkdir -p $XCLI_FOLDER
 
-# AI: Provide some colored output that introduces the tool with the title `Xcli Tools`
-# and a brief description of what this does
+# Colored intro output
+echo ""
+echo -e "\033[1;36m╔════════════════════════════════════════════════╗\033[0m"
+echo -e "\033[1;36m║\033[1;33m          Xcli Tools                            \033[1;36m║\033[0m"
+echo -e "\033[1;36m║\033[0m                                                \033[1;36m║\033[0m"
+echo -e "\033[1;36m║\033[0m  iOS/Xcode project automation toolkit          \033[1;36m║\033[0m"
+echo -e "\033[1;36m║\033[0m                                                \033[1;36m║\033[0m"
+echo -e "\033[1;36m║\033[0m  - setup  : scan and cache projects/schemes    \033[1;36m║\033[0m"
+echo -e "\033[1;36m║\033[0m  - build  : build with xcodebuild + xcpretty   \033[1;36m║\033[0m"
+echo -e "\033[1;36m╚════════════════════════════════════════════════╝\033[0m"
+echo ""
+
+configCommand() {
+
+	source $SCRIPT_DIR/configureProject.sh
+
+	case "$1" in
+		--project)
+			if [[ -n "$2" ]]; then
+				selectProject $2
+			else
+				openProjectSelector 
+			fi
+
+			;;
+		--scheme)
+			if [[ -n "$2" ]]; then
+				selectScheme $2
+			else
+				openSchemeSelector 
+			fi
+			;;
+		*)
+			fail "Unknown config option: $1"
+			;;
+	esac
+}
 
 # This command scans the current directory for 
-# project files, collects all the schemes
+# project files and collects all the schemes
 setupCommand() {
 	# Save all project files in a cache
 	source $SCRIPT_DIR/findProjectFiles.sh
@@ -37,19 +78,21 @@ buildCommand() {
 	# Get derived data folder for current project-branch
 	source ./getDerivedDataPath.sh
 
-	$derivedDataFolder=$(getDerivedDataPath)
+	derivedDataFolder=$(getDerivedDataPath)
 
 	mkdir -p $XCLI_FOLDER
 
 	echo "Building Project $XCODE_PROJECT with scheme $XCODE_SCHEME for $XCODE_DESTINATION"
-	xcodebuild\
-		-project "$XCODE_PROJECT"\
-		-scheme "$XCODE_SCHEME"\
-		-destination "$XCODE_DESTINATION"\
-		-derivedDataPath "$derivedDataFolder"
+	mkdir -p .build
+
+	xcodebuild \
+		-project "$XCODE_PROJECT" \
+		-scheme "$XCODE_SCHEME" \
+		-destination "$XCODE_DESTINATION" \
+		-derivedDataPath "$derivedDataFolder" \
 		build | tee .build/build.log | xcpretty
 
-	grep "error:" .build/build.log > .build/errors.log
+	grep "error:" .build/build.log > .build/errors.log || true
 
 	xcode-build-server parse -a .build/build.log && echo "parsed logs correctly" || echo "failed to parse logs"
 }
@@ -63,9 +106,14 @@ case "$1" in
 	build)
 		buildCommand
 		;;
+
+	config)
+		configCommand "$2" "$3"
+		;;
+
 	*)
 		echo "Unknown command: $1"
-		echo "Usage: $0 [build]"
+		echo "Usage: $0 [setup|build|config]"
 		exit 1
 		;;
 esac
