@@ -1,0 +1,22 @@
+# iOS/Xcode build artifacts
+Build/
+DerivedData/
+*.xcuserdata/
+xcuserdata/
+xcshareddata/xcschemes/*
+*.xcscmblueprint
+*.xccheckout
+
+# Xcli tool cache
+.xcli/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db

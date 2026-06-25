@@ -44,6 +44,11 @@ configCommand() {
 				openSchemeSelector 
 			fi
 			;;
+
+		--device)
+			openDeviceSelector 
+			;;
+
 		*)
 			fail "Unknown config option: $1"
 			;;
@@ -62,13 +67,35 @@ setupCommand() {
 	echo "Found $(cat $XCLI_FOLDER/schemes | wc -l | cut -f 1) schemes"
 }
 
+parseDestination() {
+	selectedDestination=$1
+	simulator=1
+
+	if [[ $selectedDestination =~ "(Device)$" ]]; then
+		simulator=0
+	fi
+
+	if [[ $selectedDestination =~ "^Name: " ]]; then
+		trimmed=$(echo $selectedDestination | sed "s/Name: \"\(.*\)\"/\1/" | sed "s/\((Simulator)|(Device)\)//")
+		echo "platform=$([[ $simulator == 1 ]] && echo "iOS Simulator" || echo "iOS"),name=$trimmed"
+	else
+		trimmed=$(echo $selectedDestination | awk '{ print $(NF-1) }')
+		echo "platform=$([[ $simulator == 1 ]] && echo "iOS Simulator" || echo "iOS"),id=$trimmed"
+	fi
+}
+
 # This command builds the project and writes possible compilation errors in 
 # a buffer that can be parsed later.
 buildCommand() {
+
+	[[ -s $XCLI_FOLDER/selectedProject ]] || fail "No project selected"
+	[[ -s $XCLI_FOLDER/selectedScheme ]] || fail "No scheme selected"
+	[[ -s $XCLI_FOLDER/selectedDevice ]] || fail "No destination selected"
+
 	# Get current build configuration
-	XCODE_PROJECT=${XCODE_PROJECT:-"KeylessSDK.xcodeproj"}
-	XCODE_SCHEME=${XCODE_SCHEME:-"KeylessSDK iOS"}
-	XCODE_DESTINATION=${XCODE_DESTINATION:-"generic/platform=iOS Simulator"}
+	XCODE_PROJECT=$(cat $XCLI_FOLDER/selectedProject)
+	XCODE_SCHEME=$(cat $XCLI_FOLDER/selectedScheme)
+	XCODE_DESTINATION=$(parseDestination "$(cat $XCLI_FOLDER/selectedDevice)")
 
 	if [[ ! -e $XCODE_PROJECT ]]; then 
 		echo "Project file is not present in this folder. Check CWD"
@@ -76,7 +103,7 @@ buildCommand() {
 	fi
 
 	# Get derived data folder for current project-branch
-	source ./getDerivedDataPath.sh
+	source $SCRIPT_DIR/getDerivedDataPath.sh
 
 	derivedDataFolder=$(getDerivedDataPath)
 
