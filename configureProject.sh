@@ -77,3 +77,21 @@ openProjectSelector() {
 openSchemeSelector() {
 	echo $(cat $XCLI_FOLDER/schemes | fzf) > $XCLI_FOLDER/selectedScheme
 }
+
+switchBuildOption() {
+	if [[ -z "$1" ]]; then
+		fail "Expected to receive build option argument. Received nothing"
+	fi
+
+	case "$1" in
+		build)
+			echo "build" > $XCLI_FOLDER/selectedBuildOption
+			;;
+		buildForTest)
+			echo "build-for-testing" > $XCLI_FOLDER/selectedBuildOption
+			;;
+		*)
+			fail "Unsupported build option"
+			;;
+	esac
+}
