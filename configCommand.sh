@@ -15,7 +15,7 @@ configCommand() {
 			;;
 		--scheme)
 			if [[ -n "$2" ]]; then
-				selectScheme $2
+				selectScheme "$2"
 			else
 				openSchemeSelector 
 			fi

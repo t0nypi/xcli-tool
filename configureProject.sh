@@ -11,7 +11,7 @@ selectProject() {
 		fail "Expected to receive the name of the project, but received nothing"
 	fi
 
-	grep -e $1 $XCLI_FOLDER/projects || fail "Project not found"
+	grep -e "$1" "$XCLI_FOLDER/projects" || fail "Project not found"
 
 	echo "$1" > $XCLI_FOLDER/selectedProject 
 }
@@ -21,7 +21,7 @@ selectScheme() {
 		fail "Expected to receive the name of the scheme, but received nothing"
 	fi
 
-	grep -e $1 $XCLI_FOLDER/schemes || fail "Scheme not found"
+	grep -e "^$1$" "$XCLI_FOLDER/schemes" || fail "Scheme not found"
 
 	echo "$1" > $XCLI_FOLDER/selectedScheme 
 }
