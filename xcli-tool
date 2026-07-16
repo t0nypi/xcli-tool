@@ -1,10 +1,10 @@
 #!/opt/homebrew/bin/bash
-# Initialize some globals
 
+# Initialize globals
 XCLI_FOLDER=".xcli"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 
-# Helper: fail with an error message and exit with -1
+# Shared helper: fail with an error message and exit with -1
 fail() {
 	echo "❌ ERROR: $1" >&2
 	exit -1
@@ -24,224 +24,14 @@ echo -e "\033[1;36m║\033[0m  - build  : build with xcodebuild + xcpretty   \03
 echo -e "\033[1;36m╚════════════════════════════════════════════════╝\033[0m"
 echo ""
 
-configCommand() {
+# Source shared utilities
 
-	source $SCRIPT_DIR/configureProject.sh
-
-	case "$1" in
-		--project)
-			if [[ -n "$2" ]]; then
-				selectProject $2
-			else
-				openProjectSelector 
-			fi
-
-			;;
-		--scheme)
-			if [[ -n "$2" ]]; then
-				selectScheme $2
-			else
-				openSchemeSelector 
-			fi
-			;;
-
-		--device)
-			openDeviceSelector 
-			;;
-
-		--build-option)
-			if [[ -z "$2" ]]; then
-				echo "Valid build options are:"
-				echo "- 'build'"
-				echo "- 'buildForTest'"
-				fail "Provide one of the options above"
-			fi
-
-			switchBuildOption "$2"
-			;;
-
-		*)
-			fail "Unknown config option: $1"
-			;;
-	esac
-}
-
-listCommand() {
-
-	source $SCRIPT_DIR/configureProject.sh
-
-	case "$1" in
-		--project)
-			if [[ -n "$2" ]]; then
-				grep -e $2 $XCLI_FOLDER/projects || fail "Project not found"
-			else
-				echo "Available projects:"
-				cat $XCLI_FOLDER/projects
-			fi
-			;;
-		--scheme)
-			if [[ -n "$2" ]]; then
-				grep -e $2 $XCLI_FOLDER/schemes || fail "Scheme not found"
-			else
-				echo "Available schemes:"
-				cat $XCLI_FOLDER/schemes
-			fi
-			;;
-		--device)
-			echo "Available devices:"
-			xcrun xctrace list devices | awk '
-			function printNameAndIdentifier(type) {
-					name = ""
-					if (match($0, /[^(]*\(/)) {
-						name = substr($0, RSTART, RLENGTH-2)
-					}
-
-					identifier = substr($NF, 2, length($NF)-2)
-
-					printf("\"%s\" %s (%s)\n", name, identifier, type)
-				}
-
-				/== Devices/,/== Simulator/ {
-					if(!/(^==|^$)/) {
-						printNameAndIdentifier("Device")
-					}
-				}
-
-				/== Simulator/ {found=1} found {
-					if(!/(^==|^$)/) {
-						printNameAndIdentifier("Simulator")
-					}
-				}
-			'
-			;;
-		--build-option)
-			echo "Available build options:"
-			echo "- build"
-			echo "- buildForTest"
-			;;
-		*)
-			fail "Unknown list option: $1"
-			;;
-	esac
-}
-
-# This command scans the current directory for 
-# project files and collects all the schemes
-setupCommand() {
-	# Save all project files in a cache
-	source $SCRIPT_DIR/findProjectFiles.sh
-	echo "Found $(cat $XCLI_FOLDER/projects | wc -l | cut -f 1) projects/workspaces"
-
-	# Save all schemes in a cache
-	source $SCRIPT_DIR/findSchemes.sh
-	echo "Found $(cat $XCLI_FOLDER/schemes | wc -l | cut -f 1) schemes"
-}
-
-parseDestination() {
-	selectedDestination=$1
-	simulator=1
-
-	if [[ "${selectedDestination}" =~ \(Device\)$ ]]; then
-		simulator=0
-	fi
-
-	if [[ $(echo $selectedDestination) =~ "^Name: " ]]; then
-		trimmed=$(echo $selectedDestination | sed "s/Name: \"\(.*\)\"/\1/" | sed "s/\((Simulator)|(Device)\)//")
-		echo "platform=$([[ $simulator == 1 ]] && echo "iOS Simulator" || echo "iOS"),name=$trimmed"
-	else
-		trimmed=$(echo $selectedDestination | awk '{ print $(NF-1) }')
-		echo "platform=$([[ $simulator == 1 ]] && echo "iOS Simulator" || echo "iOS"),id=$trimmed"
-	fi
-}
-
-# This command builds the project and writes possible compilation errors in 
-# a buffer that can be parsed later.
-buildCommand() {
-	buildOption="$(cat $XCLI_FOLDER/selectedBuildOption)"
-
-	[[ -s $XCLI_FOLDER/selectedProject ]] || fail "No project selected"
-	[[ -s $XCLI_FOLDER/selectedScheme ]] || fail "No scheme selected"
-	[[ -s $XCLI_FOLDER/selectedDevice ]] || fail "No destination selected"
-
-	# Get current build configuration
-	XCODE_PROJECT=$(cat $XCLI_FOLDER/selectedProject)
-	XCODE_SCHEME=$(cat $XCLI_FOLDER/selectedScheme)
-	XCODE_DESTINATION=$(parseDestination "$(cat $XCLI_FOLDER/selectedDevice)")
-
-	if [[ ! -e $XCODE_PROJECT ]]; then 
-		echo "Project file is not present in this folder. Check CWD"
-		exit -1
-	fi
-
-	# Get derived data folder for current project-branch
-	source $SCRIPT_DIR/getDerivedDataPath.sh
-
-	derivedDataFolder=$(getDerivedDataPath)
-
-	mkdir -p $XCLI_FOLDER
-	mkdir -p .build
-
-	echo "Building Project $XCODE_PROJECT with scheme $XCODE_SCHEME for $XCODE_DESTINATION"
-
-	xcodebuild \
-		-project "$XCODE_PROJECT" \
-		-scheme "$XCODE_SCHEME" \
-		-destination "$XCODE_DESTINATION" \
-		-derivedDataPath "$derivedDataFolder" \
-		$buildOption | tee .build/build.log | xcpretty
-
-	grep "error:" .build/build.log > .build/errors.log || true
-
-	xcode-build-server parse -a .build/build.log && echo "parsed logs correctly" || echo "failed to parse logs"
-}
-
-runCommand() {
-	# Check if the selected device is a simulator (ends with '(Simulator)')
-	isDeviceSimulator=$([[ $(cat $XCLI_FOLDER/selectedDevice) =~ \(Simulator\)$ ]] && echo 1 || echo 0)
-	echo "device is simulator $isDeviceSimulator"
-
-	XCODE_PROJECT=$(cat $XCLI_FOLDER/selectedProject)
-	XCODE_SCHEME=$(cat $XCLI_FOLDER/selectedScheme)
-	XCODE_DESTINATION=$(parseDestination "$(cat $XCLI_FOLDER/selectedDevice)")
-
-	echo "Getting target information before installing app on device"
-	echo $XCODE_DESTINATION
-
-	# Get derived data folder for current project-branch
-	source $SCRIPT_DIR/getDerivedDataPath.sh
-
-	derivedDataFolder=$(getDerivedDataPath)
-	deviceIdentifier=$(cat $XCLI_FOLDER/selectedDevice | awk '{print $2}')
-
-	declare -A builtTargetInfo
-
-	# AI: Use process substitution (< <(...)) so the while loop runs in the
-	# current shell. A pipe creates a subshell, and associative array
-	# assignments inside it are lost when the subshell exits.
-	while IFS=' = ' read -r key value; do
-		builtTargetInfo[$key]="$value"
-	done < <(xcodebuild \
-		-project "$XCODE_PROJECT" \
-		-scheme "$XCODE_SCHEME" \
-		-destination "$XCODE_DESTINATION" \
-		-derivedDataPath "$derivedDataFolder" \
-		-showBuildSettings \
-		build 2>/dev/null | grep -e "TARGET_BUILD_DIR =" -e "EXECUTABLE_FOLDER_PATH =" -e "PRODUCT_BUNDLE_IDENTIFIER =")
-
-	echo ${builtTargetInfo[@]}
-	echo $isDeviceSimulator
-
-	if [[ $isDeviceSimulator == 1 ]]; then
-		echo "Installing on simulator"
-		xcrun simctl boot "$deviceIdentifier"
-		xcrun simctl install "$deviceIdentifier" "${builtTargetInfo[TARGET_BUILD_DIR]}/${builtTargetInfo[EXECUTABLE_FOLDER_PATH]}"
-		xcrun simctl launch "$deviceIdentifier" "${builtTargetInfo[PRODUCT_BUNDLE_IDENTIFIER]}"
-	else
-		echo "Installing on physical device"
-		devicectl device install app --device "$deviceIdentifier" "${builtTargetInfo[TARGET_BUILD_DIR]}/${builtTargetInfo[EXECUTABLE_FOLDER_PATH]}"
-		devicectl device process launch -v --console --device "$deviceIdentifier" "${builtTargetInfo[PRODUCT_BUNDLE_IDENTIFIER]}" 
-	fi
-}
+# Source command modules
+source $SCRIPT_DIR/setupCommand.sh
+source $SCRIPT_DIR/buildCommand.sh
+source $SCRIPT_DIR/configCommand.sh
+source $SCRIPT_DIR/listCommand.sh
+source $SCRIPT_DIR/runCommand.sh
 
 # Dispatch based on first argument
 case "$1" in
