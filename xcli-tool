@@ -138,8 +138,8 @@ buildCommand() {
 
 runCommand() {
 	# Check if the selected device is a simulator (ends with '(Simulator)')
-	_simRegex='\(Simulator\)$'
-	isDeviceSimulator=$([[ $(cat $XCLI_FOLDER/selectedDevice) =~ $_simRegex ]] && echo 1 || echo 0)
+	isDeviceSimulator=$([[ $(cat $XCLI_FOLDER/selectedDevice) =~ \(Simulator\)$ ]] && echo 1 || echo 0)
+	echo "device is simulator $isDeviceSimulator"
 
 	XCODE_PROJECT=$(cat $XCLI_FOLDER/selectedProject)
 	XCODE_SCHEME=$(cat $XCLI_FOLDER/selectedScheme)
@@ -172,7 +172,7 @@ runCommand() {
 	echo ${builtTargetInfo[@]}
 	echo $isDeviceSimulator
 
-	if [[ -z $isDeviceSimulator ]]; then
+	if [[ $isDeviceSimulator == 1 ]]; then
 		echo "Installing on simulator"
 		xcrun simctl boot "$deviceIdentifier"
 		xcrun simctl install "$deviceIdentifier" "${builtTargetInfo[TARGET_BUILD_DIR]}/${builtTargetInfo[EXECUTABLE_FOLDER_PATH]}"
@@ -180,7 +180,7 @@ runCommand() {
 	else
 		echo "Installing on physical device"
 		devicectl device install app --device "$deviceIdentifier" "${builtTargetInfo[TARGET_BUILD_DIR]}/${builtTargetInfo[EXECUTABLE_FOLDER_PATH]}"
-		devicectl device process launch --device "$deviceIdentifier" "${builtTargetInfo[PRODUCT_BUNDLE_IDENTIFIER]}" --start-stopped
+		devicectl device process launch -v --console --device "$deviceIdentifier" "${builtTargetInfo[PRODUCT_BUNDLE_IDENTIFIER]}" 
 	fi
 }
 
