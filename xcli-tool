@@ -66,6 +66,65 @@ configCommand() {
 	esac
 }
 
+listCommand() {
+
+	source $SCRIPT_DIR/configureProject.sh
+
+	case "$1" in
+		--project)
+			if [[ -n "$2" ]]; then
+				grep -e $2 $XCLI_FOLDER/projects || fail "Project not found"
+			else
+				echo "Available projects:"
+				cat $XCLI_FOLDER/projects
+			fi
+			;;
+		--scheme)
+			if [[ -n "$2" ]]; then
+				grep -e $2 $XCLI_FOLDER/schemes || fail "Scheme not found"
+			else
+				echo "Available schemes:"
+				cat $XCLI_FOLDER/schemes
+			fi
+			;;
+		--device)
+			echo "Available devices:"
+			xcrun xctrace list devices | awk '
+			function printNameAndIdentifier(type) {
+					name = ""
+					if (match($0, /[^(]*\(/)) {
+						name = substr($0, RSTART, RLENGTH-2)
+					}
+
+					identifier = substr($NF, 2, length($NF)-2)
+
+					printf("\"%s\" %s (%s)\n", name, identifier, type)
+				}
+
+				/== Devices/,/== Simulator/ {
+					if(!/(^==|^$)/) {
+						printNameAndIdentifier("Device")
+					}
+				}
+
+				/== Simulator/ {found=1} found {
+					if(!/(^==|^$)/) {
+						printNameAndIdentifier("Simulator")
+					}
+				}
+			'
+			;;
+		--build-option)
+			echo "Available build options:"
+			echo "- build"
+			echo "- buildForTest"
+			;;
+		*)
+			fail "Unknown list option: $1"
+			;;
+	esac
+}
+
 # This command scans the current directory for 
 # project files and collects all the schemes
 setupCommand() {
@@ -196,6 +255,10 @@ case "$1" in
 
 	config)
 		configCommand "$2" "$3"
+		;;
+	
+	list)
+		listCommand "$2" "$3"
 		;;
 	
 	run)
