@@ -43,6 +43,9 @@ selectDeviceByIdentifier() {
 }
 
 openDeviceSelector() {
+	currentDir="$(dirname "${BASH_SOURCE[0]}")"
+	source "$currentDir"/listDevices.sh
+
 	listDevices | fzf | \
 		awk '{ printf("Identifier: %s %s\n", substr($(NF-1), 1, length($(NF-1))), $NF) }'  > $XCLI_FOLDER/selectedDevice
 }
