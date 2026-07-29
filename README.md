@@ -6,15 +6,15 @@ A lightweight shell-based CLI that wraps `xcodebuild` with interactive project c
 
 ## Motivations
 
-I have created this tool to ease iOS development on command line. 
+I have created this tool to ease iOS development on command line.
 
-Xcode has always been the editor of choice for its extensive tooling for mac and mobile development; one cannot really think to develop an iOS project without keeping Xcode open. 
+Xcode has always been the editor of choice for its extensive tooling for mac and mobile development; one cannot really think to develop an iOS project without keeping Xcode open.
 Even with the advent of AI agents, Xcode still has the upper-hand as editor of choice thanks to its new agent capabilities. Any other agent would have to resort to `xcodebuild`.
 `xcodebuild` has a cumbersome interface that requires a lot of mnemonic load. Plus it's not easy to remember all projects/schemes/targets, and its output is quite verbose.
 
 **`xcli-tool` re-invents the wheel**. I'm not saying that iOS development now does not require Xcode and we can all build iOS apps from Windows or Linux, but at least it makes
 iOS/iPadOS/macOS development feel **smoother on cli**. I didn't like Xcode dev experience. I use neovim as my editor of choice and I like being already in the cli where I can readily
-launch all my tools and scripts, while keeping an eye on my Swift sources. 
+launch all my tools and scripts, while keeping an eye on my Swift sources.
 
 ### What I wanted from this project
 
@@ -26,7 +26,7 @@ The tool is still in an embryonic stage, but the end goal is to really allow one
 
 ## Features
 
-- **`setup`** — Scan the current directory for `.xcodeproj` / `.xcworkspace` files and collect all available schemes (cached locally).
+- **`setup`** — Scan the current directory for `.xcodeproj` / `.xcworkspace` files and collect all available schemes (cached locally). When in a workspace, it also adds the projects contained in that workspace
 - **`build`** — Build the selected project/scheme on the selected target device or simulator using `xcodebuild` + `xcpretty`.
 - **`config`** — Interactively (or non-interactively) select the project, scheme, device, and build option (`build` / `build-for-testing`).
 - **`list`** — List available projects, schemes, devices, and build options.
@@ -65,12 +65,12 @@ Scans the current directory (recursively) for Xcode project files (`.xcodeproj`,
 
 Configure the build target. If no value is provided, an interactive `fzf` picker is shown.
 
-| Option              | Description                                    |
-|---------------------|------------------------------------------------|
-| `--project`         | Select a project or workspace                  |
-| `--scheme`          | Select a build scheme                          |
-| `--device`          | Select a device or simulator                   |
-| `--build-option`    | Set build action: `build` or `build-for-test`  |
+| Option           | Description                                   |
+| ---------------- | --------------------------------------------- |
+| `--project`      | Select a project or workspace                 |
+| `--scheme`       | Select a build scheme                         |
+| `--device`       | Select a device or simulator                  |
+| `--build-option` | Set build action: `build` or `build-for-test` |
 
 ```bash
 # Interactive
@@ -132,19 +132,19 @@ xcli-tool          # Entrypoint — dispatches commands
 
 All state is stored in the `.xcli/` directory:
 
-| File                 | Description                          |
-|----------------------|--------------------------------------|
-| `.xcli/projects`     | Cached list of project/workspace paths |
-| `.xcli/schemes`      | Cached list of scheme names          |
-| `.xcli/selectedProject`  | Currently selected project         |
-| `.xcli/selectedScheme`   | Currently selected scheme          |
-| `.xcli/selectedDevice`   | Currently selected device/simulator |
+| File                        | Description                                  |
+| --------------------------- | -------------------------------------------- |
+| `.xcli/projects`            | Cached list of project/workspace paths       |
+| `.xcli/schemes`             | Cached list of scheme names                  |
+| `.xcli/selectedProject`     | Currently selected project                   |
+| `.xcli/selectedScheme`      | Currently selected scheme                    |
+| `.xcli/selectedDevice`      | Currently selected device/simulator          |
 | `.xcli/selectedBuildOption` | Build action (`build` / `build-for-testing`) |
 
 ### Environment Variables
 
-| Variable                | Description                            |
-|-------------------------|----------------------------------------|
+| Variable                     | Description                                                     |
+| ---------------------------- | --------------------------------------------------------------- |
 | `$XCODE_CUSTOM_DERIVED_DATA` | Base path for branch-aware DerivedData (default: `DerivedData`) |
 
 ## Requirements
@@ -156,8 +156,8 @@ All state is stored in the `.xcli/` directory:
 
 ## Contributing
 
-The tool is completely written in **bash** for now. Why bash? Because it was fast to iterate over to begin with. 
-Second, it easily adapts to any other language, in case I decide to rewrite or add modules in, say, Python or Swift. 
+The tool is completely written in **bash** for now. Why bash? Because it was fast to iterate over to begin with.
+Second, it easily adapts to any other language, in case I decide to rewrite or add modules in, say, Python or Swift.
 An important way of contributing for me is to open an issue on Github and let me know of any problem or compelling
 feature the tool should have. That is much appreciated!
 
@@ -169,8 +169,8 @@ Some features I plan to add in the near future are:
 
 - Automatically attach an **LLDB session to Simulators** when running (Physical devices require more work as we need to connect via a `debugproxy`)
 - **Discover and run tests**, providing a concise output that provides immediate and useful information
-- Watch file additions/removal/renaming to **automatically update Xcode project**. `Tuist`'s approach of removing completely `xcodeproj` folders is my favorite, 
-but there are projects where migrating to Tuist may take time and effort. 
+- Watch file additions/removal/renaming to **automatically update Xcode project**. `Tuist`'s approach of removing completely `xcodeproj` folders is my favorite,
+  but there are projects where migrating to Tuist may take time and effort.
 
 More ambitious work that aims at making Xcode less and less compelling will be listed.
 
