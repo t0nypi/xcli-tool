@@ -30,12 +30,16 @@ runCommand() {
 	while IFS=' = ' read -r key value; do
 		builtTargetInfo[$key]="$value"
 	done < <(xcodebuild \
-		-project "$XCODE_PROJECT" \
+		$([[ "$XCODE_PROJECT" =~ .xcworkspace$ ]] && echo "-workspace "$XCODE_PROJECT"" ||  echo "-project "$XCODE_PROJECT"") \
 		-scheme "$XCODE_SCHEME" \
 		-destination "$XCODE_DESTINATION" \
 		-derivedDataPath "$derivedDataFolder" \
 		-showBuildSettings \
 		build 2>/dev/null | grep -e "TARGET_BUILD_DIR =" -e "EXECUTABLE_FOLDER_PATH =" -e "PRODUCT_BUNDLE_IDENTIFIER =")
+
+	if (( ${#builtTargetInfo[@]} == 0 )); then
+		fail "Could not get built target info"
+	fi
 
 	echo ${builtTargetInfo[@]}
 	echo $isDeviceSimulator

@@ -33,7 +33,7 @@ buildCommand() {
 	echo "Building Project $XCODE_PROJECT with scheme $XCODE_SCHEME for $XCODE_DESTINATION"
 
 	xcodebuild \
-		-project "$XCODE_PROJECT" \
+		$([[ "$XCODE_PROJECT" =~ .xcworkspace$ ]] && echo "-workspace "$XCODE_PROJECT"" ||  echo "-project "$XCODE_PROJECT"") \
 		-scheme "$XCODE_SCHEME" \
 		-destination "$XCODE_DESTINATION" \
 		-derivedDataPath "$derivedDataFolder" \
