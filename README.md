@@ -31,6 +31,7 @@ The tool is still in an embryonic stage, but the end goal is to really allow one
 - **`config`** — Interactively (or non-interactively) select the project, scheme, device, and build option (`build` / `build-for-testing`).
 - **`list`** — List available projects, schemes, devices, and build options.
 - **`run`** — Build and run the configured application on the target device or simulator.
+- **`test`** — Build and run tests for the selected project/scheme, capturing compilation errors and parsing logs with `xcode-build-server`.
 
 ## Quick Start
 
@@ -47,7 +48,10 @@ The tool is still in an embryonic stage, but the end goal is to really allow one
 # 3. Build
 ./xcli-tool build
 
-# 4. Run on the configured target
+# 4. Test
+./xcli-tool test
+
+# 5. Run on the configured target
 ./xcli-tool run
 ```
 
@@ -111,6 +115,14 @@ Builds and runs the configured application on the target device or simulator. Au
 ./xcli-tool run
 ```
 
+### `test`
+
+Builds and runs tests for the selected project and scheme on the configured device/simulator. Uses `xcodebuild test` with `xcpretty` for formatted output. Build artifacts (including a full log and a filtered errors log) are stored in `.build/`. The log is also parsed with `xcode-build-server` for structured diagnostics.
+
+```bash
+./xcli-tool test
+```
+
 ## Architecture
 
 ```
@@ -120,6 +132,7 @@ xcli-tool          # Entrypoint — dispatches commands
 ├── configCommand.sh      # Configuration CLI
 ├── listCommand.sh        # Listing/inspection
 ├── runCommand.sh         # Build + run on device
+├── testCommand.sh        # Build + test on device
 ├── configureProject.sh   # Project/scheme/device selection helpers
 ├── findProjectFiles.sh   # Find .xcodeproj / .xcworkspace
 ├── findSchemes.sh        # Find .xcscheme files
@@ -168,7 +181,7 @@ For any direct contributions, feel free to open a PR.
 Some features I plan to add in the near future are:
 
 - Automatically attach an **LLDB session to Simulators** when running (Physical devices require more work as we need to connect via a `debugproxy`)
-- **Discover and run tests**, providing a concise output that provides immediate and useful information
+- ~~**Discover and run tests**, providing a concise output that provides immediate and useful information~~ ✅ Implemented via `xcli-tool test`
 - Watch file additions/removal/renaming to **automatically update Xcode project**. `Tuist`'s approach of removing completely `xcodeproj` folders is my favorite,
   but there are projects where migrating to Tuist may take time and effort.
 
