@@ -4,9 +4,7 @@ currentDir="$(dirname "${BASH_SOURCE[0]}")"
 source "$currentDir"/parseDestination.sh
 # This command builds the project and writes possible compilation errors in 
 # a buffer that can be parsed later.
-buildCommand() {
-	buildOption="$(cat $XCLI_FOLDER/selectedBuildOption)"
-
+testCommand() {
 	[[ -s $XCLI_FOLDER/selectedProject ]] || fail "No project selected"
 	[[ -s $XCLI_FOLDER/selectedScheme ]] || fail "No scheme selected"
 	[[ -s $XCLI_FOLDER/selectedDevice ]] || fail "No destination selected"
@@ -30,14 +28,14 @@ buildCommand() {
 	mkdir -p $XCLI_FOLDER
 	mkdir -p .build
 
-	echo "Building Project $XCODE_PROJECT with scheme $XCODE_SCHEME for $XCODE_DESTINATION"
+	echo "Testing Project $XCODE_PROJECT with scheme $XCODE_SCHEME for $XCODE_DESTINATION"
 
-	xcodebuild \
+	set -o pipefail && env NSUnbufferedIO=YES xcodebuild \
 		$([[ "$XCODE_PROJECT" =~ .xcworkspace$ ]] && echo "-workspace "$XCODE_PROJECT"" ||  echo "-project "$XCODE_PROJECT"") \
 		-scheme "$XCODE_SCHEME" \
 		-destination "$XCODE_DESTINATION" \
 		-derivedDataPath "$derivedDataFolder" \
-		$buildOption | tee .build/build.log 
+		test | tee .build/build.log | xcpretty 
 
 	grep "error:" .build/build.log > .build/errors.log || true
 
