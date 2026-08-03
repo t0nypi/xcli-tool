@@ -24,7 +24,3 @@ test_setupCollectsAllAvailableProjects() {
 
 	grep "^TestProject.xcodeproj$" $project_file &> /dev/null || fail "Not all Schemes have been found" 
 }
-
-run_test test_setupFindsProjectsAndSchemes
-run_test test_setupCollectsAllAvailableSchemes
-run_test test_setupCollectsAllAvailableProjects

@@ -4,6 +4,12 @@ configCommand() {
 	currentDir="$(dirname "${BASH_SOURCE[0]}")"
 	source "$currentDir"/configureProject.sh
 
+	# Check that setup has been run (projects and schemes files must exist)
+	if [[ ! -f "$XCLI_FOLDER/projects" ]] || [[ ! -f "$XCLI_FOLDER/schemes" ]]; then
+		echo "ERROR: you must run 'setup' before 'config'"
+		exit 1
+	fi
+
 	case "$1" in
 		--project)
 			if [[ -n "$2" ]]; then

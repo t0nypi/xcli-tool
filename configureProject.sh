@@ -17,13 +17,14 @@ selectProject() {
 }
 
 selectScheme() {
-	if [[ -z "$1" ]]; then 
+	local scheme=$1
+	if [[ -z "$scheme" ]]; then 
 		fail "Expected to receive the name of the scheme, but received nothing"
 	fi
 
-	grep -e "^$1$" "$XCLI_FOLDER/schemes" || fail "Scheme not found"
+	grep -e "$scheme" "$XCLI_FOLDER/schemes" || fail "Scheme not found"
 
-	echo "$1" > $XCLI_FOLDER/selectedScheme 
+	echo "$scheme" > $XCLI_FOLDER/selectedScheme 
 }
 
 selectDeviceByName() {

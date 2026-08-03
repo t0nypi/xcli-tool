@@ -181,7 +181,6 @@ For any direct contributions, feel free to open a PR.
 Some features I plan to add in the near future are:
 
 - Automatically attach an **LLDB session to Simulators** when running (Physical devices require more work as we need to connect via a `debugproxy`)
-- ~~**Discover and run tests**, providing a concise output that provides immediate and useful information~~ ✅ Implemented via `xcli-tool test`
 - Watch file additions/removal/renaming to **automatically update Xcode project**. `Tuist`'s approach of removing completely `xcodeproj` folders is my favorite,
   but there are projects where migrating to Tuist may take time and effort.
 
