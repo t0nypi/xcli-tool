@@ -13,15 +13,18 @@ clean() {
 
 run_test() {
 	local output
-	output=$(cd "$TEST_PROJECT_DIR" && $1 2>&1) && {
+	output=$(cd "$TEST_PROJECT_DIR" && $1 2>&1)
+	rc=$?
+	 if [[ $rc == 0 ]]; then 
 		echo "✅ SUCCESS: test $1 succeeded"
 		(cd "$TEST_PROJECT_DIR" && clean)
 		return 0
-	}
-	echo "❌ FAILURE: test $1 failed"
-	echo "$output"
-	(cd "$TEST_PROJECT_DIR" && clean)
-	return 1
+	else
+		echo "❌ FAILURE: test $1 failed"
+		echo "$output"
+		(cd "$TEST_PROJECT_DIR" && clean)
+		return 1
+	fi
 }
 
 # Always returns fixed result

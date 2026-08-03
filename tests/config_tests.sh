@@ -5,7 +5,7 @@ source "$(dirname "$0")/helpers.sh"
 test_config_failsIfSetupIsNotRun() {
 	mock_fzf "TestProjectScheme2"
 
-	[[ -f .xcli/schemes ]] && fail "There should not be any scheme file here"
+	[[ ! -f .xcli/schemes ]] || fail "There should not be any scheme file here"
 
 	xcli-tool config --scheme | grep "ERROR: you must run 'setup' before 'config'" \
 	|| fail "Config should fail if setup is not run before"
@@ -31,7 +31,7 @@ test_configNonInteractiveWithNonExistingScheme_failsWithoutSelectingAnything() {
 	xcli-tool setup &> /dev/null
 	xcli-tool config --scheme "NonExistingScheme" &> /dev/null && fail "Should not succeed since the scheme is invalid"
 
-	[[ -f .xcli/selectedScheme ]] && fail "Should have selected correctly the scheme"
+	[[ ! -f .xcli/selectedScheme ]] || fail "Should not have selected any scheme" 
 }
 
 # === --project tests ===
@@ -56,7 +56,7 @@ test_configProjectNonInteractiveWithNonExistingProject_failsWithoutSelectingAnyt
 	xcli-tool setup &> /dev/null
 	xcli-tool config --project "NonExistingProject" &> /dev/null && fail "Should not succeed since the project is invalid"
 
-	[[ -f .xcli/selectedProject ]] && fail "Should not have created selectedProject for invalid project"
+	[[ ! -f .xcli/selectedProject ]] || fail "Should not have created selectedProject for invalid project" || return 0
 }
 
 # === --build-option tests ===
@@ -79,5 +79,5 @@ test_configBuildOptionNonInteractiveWithInvalidOption_failsWithoutSelectingAnyth
 	xcli-tool setup &> /dev/null
 	xcli-tool config --build-option "invalidOption" &> /dev/null && fail "Should not succeed since the build option is invalid"
 
-	[[ -f .xcli/selectedBuildOption ]] && fail "Should not have created selectedBuildOption for invalid option"
+	[[ ! -f .xcli/selectedBuildOption ]] || fail "Should not have created selectedBuildOption for invalid option" 
 }
