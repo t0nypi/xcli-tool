@@ -22,6 +22,11 @@ buildCommand() {
 	fi
 
 	# Get derived data folder for current project-branch
+	if [[ -z "${XCODE_CUSTOM_DERIVED_DATA}" ]]; then
+		echo "Error: XCODE_CUSTOM_DERIVED_DATA environment variable is not set. Please set it to a valid DerivedData base path."
+		exit 1
+	fi
+
 	currentDir="$(dirname "${BASH_SOURCE[0]}")"
 	source "$currentDir"/getDerivedDataPath.sh
 

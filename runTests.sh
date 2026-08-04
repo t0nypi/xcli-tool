@@ -17,7 +17,7 @@ success=0
 failures=0
 for test in ${tests[@]}; do
 
-	if run_test "$test"; then
+if run_test "$test"; then
 		((success++))
 	else
 		((failures++))
