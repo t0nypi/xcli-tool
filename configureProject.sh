@@ -3,7 +3,7 @@
 # Helper: fail with an error message and exit with -1
 fail() {
 	echo "❌ ERROR: $1" >&2
-	exit -1
+	exit ${2:-42}
 }
 
 selectProject() {
@@ -75,4 +75,16 @@ switchBuildOption() {
 			fail "Unsupported build option"
 			;;
 	esac
+}
+
+showConfiguration() {
+	[[ -f "$XCLI_FOLDER/selectedProject" ]] || fail "You need to set selectedProject before showing all configs" 1
+	[[ -f "$XCLI_FOLDER/selectedScheme" ]] || fail "You need to set selectedScheme before showing all configs"  2
+	[[ -f "$XCLI_FOLDER/selectedDevice" ]] || fail "You need to set selectedDevice before showing all configs"  3
+	[[ -f "$XCLI_FOLDER/selectedBuildOption" ]] || fail "You need to set selectedBuildOption before showing all configs" 4
+
+	echo "Selected project: $(cat $XCLI_FOLDER/selectedProject)"
+	echo "Selected scheme: $(cat $XCLI_FOLDER/selectedScheme)"
+	echo "Selected device: $(cat $XCLI_FOLDER/selectedDevice)"
+	echo "Selected build option: $(cat $XCLI_FOLDER/selectedBuildOption)"
 }

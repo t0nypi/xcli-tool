@@ -81,3 +81,91 @@ test_configBuildOptionNonInteractiveWithInvalidOption_failsWithoutSelectingAnyth
 
 	[[ ! -f .xcli/selectedBuildOption ]] || fail "Should not have created selectedBuildOption for invalid option" 
 }
+
+# === --show tests ===
+
+test_configShowRunBeforeSettingProject_commandFails() {
+	xcli-tool setup &> /dev/null
+	xcli-tool config --scheme "TestProjectScheme2" &> /dev/null 
+	xcli-tool config --build-option "build" &> /dev/null 
+	mock_fzf "iPhone 16"
+	xcli-tool config --device &> /dev/null
+
+	xcli-tool config --show &> /dev/null 
+	if [[ $? == 0 ]]; then
+	 fail "Should not succeed if 'project' is not set" 
+	else
+		exit 0
+	fi
+}
+
+test_configShowRunBeforeSettingScheme_commandFails() {
+	xcli-tool setup &> /dev/null
+	xcli-tool config --project "TestProject.xcodeproj" &> /dev/null
+	xcli-tool config --build-option "build" &> /dev/null 
+	mock_fzf "iPhone 16"
+	xcli-tool config --device &> /dev/null
+
+	xcli-tool config --show &> /dev/null 
+	if [[ $? == 0 ]]; then
+	 fail "Should not succeed if 'scheme' is not set" 
+	else
+		exit 0
+	fi
+}
+
+test_configShowRunBeforeSettingBuildOption_commandFails() {
+	xcli-tool setup &> /dev/null
+	xcli-tool config --project "TestProject.xcodeproj" &> /dev/null
+	xcli-tool config --scheme "TestProjectScheme2" &> /dev/null 
+	mock_fzf "iPhone 16"
+	xcli-tool config --device &> /dev/null
+
+	xcli-tool config --show &> /dev/null 
+	if [[ $? == 0 ]]; then
+	 fail "Should not succeed if 'build-option' is not set" 
+	else
+		exit 0
+	fi
+}
+
+test_configShowRunBeforeSettingDevice_commandFails() {
+	xcli-tool setup &> /dev/null && \
+	xcli-tool config --project "TestProject.xcodeproj" &> /dev/null && \
+	xcli-tool config --scheme "TestProjectScheme2" &> /dev/null  && \
+	xcli-tool config --build-option "build" &> /dev/null  && \
+
+	xcli-tool config --show &> /dev/null 
+	if [[ $? == 0 ]]; then
+	 fail "Should not succeed if 'device' is not set" 
+	else
+		exit 0
+	fi
+}
+
+test_configShowPrintsAllCurrentConfigurations() {
+	xcli-tool setup &> /dev/null
+	xcli-tool config --project "TestProject.xcodeproj" &> /dev/null 
+	xcli-tool config --scheme "TestProjectScheme2" &> /dev/null 
+	xcli-tool config --build-option "build" &> /dev/null 
+	mock_fzf "iPhone 16"
+	xcli-tool config --device &> /dev/null
+
+	local output
+	output=$(xcli-tool config --show 2>&1)
+	local rc=$?
+
+	# Should return success
+	[[ $rc == 0 ]] || fail "Should be able to show all configs, but returned code $rc"
+
+	# Should print error about missing env variable
+	# Check each expected line individually (all must be present)
+	echo "$output" | grep -q "Selected project: TestProject.xcodeproj" \
+		|| fail "Missing 'Selected project:' line in config --show output"
+	echo "$output" | grep -q "Selected scheme: TestProjectScheme2" \
+		|| fail "Missing 'Selected scheme:' line in config --show output"
+	echo "$output" | grep -q "Selected device:" \
+		|| fail "Missing 'Selected device:' line in config --show output"
+	echo "$output" | grep -q "Selected build option: build" \
+		|| fail "Missing 'Selected build option:' line in config --show output"
+}

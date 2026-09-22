@@ -20,7 +20,7 @@ run_test() {
 		(cd "$TEST_PROJECT_DIR" && clean)
 		return 0
 	else
-		echo "❌ FAILURE: test $1 failed"
+		echo "❌ FAILURE: test $1 failed with error code $rc"
 		echo "$output"
 		(cd "$TEST_PROJECT_DIR" && clean)
 		return 1

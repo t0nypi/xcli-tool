@@ -42,6 +42,10 @@ configCommand() {
 			switchBuildOption "$2"
 			;;
 
+		--show)
+			showConfiguration
+			;;
+
 		*)
 			fail "Unknown config option: $1"
 			;;
