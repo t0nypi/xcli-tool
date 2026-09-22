@@ -44,6 +44,7 @@ Configure the build target. Without a value, shows an interactive `fzf` picker.
 | `--scheme`       | Select a build scheme                         |
 | `--device`       | Select a device or simulator                  |
 | `--build-option` | Set build action: `build` or `build-for-test` |
+| `--show`         | Display all current configurations            |
 
 ```bash
 # Interactive (uses fzf)
@@ -55,6 +56,9 @@ Configure the build target. Without a value, shows an interactive `fzf` picker.
 ./xcli-tool config --project MyProject.xcodeproj
 ./xcli-tool config --scheme MyScheme
 ./xcli-tool config --build-option build
+
+# Show all current configurations
+./xcli-tool config --show
 ```
 
 ### `list <option> [filter]`

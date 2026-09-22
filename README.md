@@ -28,7 +28,7 @@ The tool is still in an embryonic stage, but the end goal is to really allow one
 
 - **`setup`** — Scan the current directory for `.xcodeproj` / `.xcworkspace` files and collect all available schemes (cached locally). When in a workspace, it also adds the projects contained in that workspace
 - **`build`** — Build the selected project/scheme on the selected target device or simulator using `xcodebuild` + `xcpretty`.
-- **`config`** — Interactively (or non-interactively) select the project, scheme, device, and build option (`build` / `build-for-testing`).
+- **`config`** — Interactively (or non-interactively) select the project, scheme, device, and build option (`build` / `build-for-testing`). Use `--show` to display all current configurations.
 - **`list`** — List available projects, schemes, devices, and build options.
 - **`run`** — Build and run the configured application on the target device or simulator.
 - **`test`** — Build and run tests for the selected project/scheme, capturing compilation errors and parsing logs with `xcode-build-server`.
@@ -75,6 +75,7 @@ Configure the build target. If no value is provided, an interactive `fzf` picker
 | `--scheme`       | Select a build scheme                         |
 | `--device`       | Select a device or simulator                  |
 | `--build-option` | Set build action: `build` or `build-for-test` |
+| `--show`         | Display all current configurations            |
 
 ```bash
 # Interactive
@@ -86,6 +87,9 @@ Configure the build target. If no value is provided, an interactive `fzf` picker
 ./xcli-tool config --project MyProject.xcodeproj
 ./xcli-tool config --scheme MyScheme
 ./xcli-tool config --build-option build
+
+# Show all current configurations
+./xcli-tool config --show
 ```
 
 ### `list <option> [filter]`
